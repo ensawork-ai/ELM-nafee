@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام عهدة تقنية المعلومات - مدارس العلم النافع الأهلية</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Almarai:wght@400;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/signature_pad/4.1.6/signature_pad.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Almarai', sans-serif;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #007B93 0%, #0097B2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 123, 147, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%239ACED8' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+            opacity: 0.3;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header p {
+            font-size: 16px;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .school-logo {
+            background-color: white;
+            color: #007B93;
+            padding: 8px 20px;
+            border-radius: 30px;
+            display: inline-block;
+            margin-top: 10px;
+            font-weight: 700;
+            font-size: 18px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+        
+        .form-section {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 123, 147, 0.08);
+        }
+        
+        .preview-section {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 123, 147, 0.08);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        h2 {
+            color: #007B93;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #007B93;
+            font-size: 22px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #444;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5eb;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            border-color: #007B93;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 123, 147, 0.1);
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .signature-pad-container {
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: white;
+            position: relative;
+            height: 150px;
+        }
+        
+        #signatureCanvas {
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+            touch-action: none;
+            background-color: white;
+        }
+        
+        .signature-placeholder {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #aaa;
+            font-size: 16px;
+            pointer-events: none;
+            text-align: center;
+            z-index: 1;
+        }
+        
+        .signature-buttons {
+            display: flex;
+            justify-content: flex-start;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .signature-box {
+            border: 2px dashed #9ACED8;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: center;
+            background-color: #f9fafc;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .signature-box p {
+            color: #777;
+            margin-bottom: 10px;
+        }
+        
+        .signature-line {
+            width: 250px;
+            border-top: 2px solid #007B93;
+            margin: 20px auto;
+            padding-top: 5px;
+            text-align: center;
+            font-weight: bold;
+            color: #007B93;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background-color: #007B93;
+            color: white;
+            flex: 2;
+        }
+        
+        .btn-secondary {
+            background-color: #28a745;
+            color: white;
+            flex: 1;
+        }
+        
+        .btn-warning {
+            background-color: #ffc107;
+            color: #212529;
+            flex: 1;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 14px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-primary:hover {
+            background-color: #006680;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #218838;
+        }
+        
+        .btn-warning:hover {
+            background-color: #e0a800;
+        }
+        
+        .preview-content {
+            background: white;
+            border: 1px solid #e1e5eb;
+            border-radius: 10px;
+            padding: 25px;
+            flex-grow: 1;
+            overflow-y: auto;
+            max-height: 600px;
+        }
+        
+        .preview-header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px double #007B93;
+            padding-bottom: 15px;
+        }
+        
+        .preview-header h3 {
+            color: #007B93;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .school-header {
+            background-color: #f2f9fb;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-right: 5px solid #007B93;
+            text-align: center;
+        }
+        
+        .school-header h4 {
+            color: #007B93;
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+        
+        .asset-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            border: 1px solid #ddd;
+        }
+        
+        .asset-table th, .asset-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+        
+        .asset-table th {
+            background-color: #f2f9fb;
+            color: #007B93;
+            font-weight: 700;
+        }
+        
+        .terms {
+            background-color: #f2f9fb;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-right: 4px solid #007B93;
+        }
+        
+        .terms h4 {
+            color: #007B93;
+            margin-bottom: 10px;
+        }
+        
+        .signature-area {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+        
+        .signature-area div {
+            width: 45%;
+            text-align: center;
+        }
+        
+        .digital-signature {
+            border-top: 2px solid #007B93;
+            padding-top: 10px;
+            margin-top: 20px;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            color: #666;
+            font-size: 14px;
+            border-top: 1px solid #e1e5eb;
+        }
+        
+        .message {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            display: none;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .signature-options {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9fafc;
+            border-radius: 10px;
+            border: 1px dashed #9ACED8;
+        }
+        
+        .signature-options h4 {
+            color: #007B93;
+            margin-bottom: 10px;
+        }
+        
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            
+            .preview-content, .preview-content * {
+                visibility: visible;
+            }
+            
+            .preview-content {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                border: none;
+                box-shadow: none;
+            }
+            
+            .no-print {
+                display: none !important;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .form-row {
+                flex-direction: column;
+            }
+            
+            .signature-area div {
+                width: 100%;
+                margin-bottom: 20px;
+            }
+            
+            .signature-pad-container {
+                height: 120px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><i class="fas fa-laptop-code"></i> نظام عهدة تقنية المعلومات</h1>
+        <p>الإدارة العامة للتعليم بمنطقة مكة المكرمة</p>
+        <div class="school-logo">
+            مدارس العلم النافع الأهلية (بنين - بنات)
+        </div>
+    </div>
+    
+    <div class="container">
+        <section class="form-section">
+            <h2><i class="fas fa-edit"></i> تعبئة بيانات العهدة</h2>
+            
+            <div class="message success" id="successMessage">
+                <i class="fas fa-check-circle"></i> تم حفظ البيانات بنجاح! يمكنك الآن معاينة العهدة وتصديرها إلى PDF.
+            </div>
+            
+            <div class="message error" id="errorMessage">
+                <i class="fas fa-exclamation-circle"></i> الرجاء تعبئة جميع الحقول المطلوبة.
+            </div>
+            
+            <form id="assetForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="employeeName"><i class="fas fa-user"></i> اسم الموظف *</label>
+                        <input type="text" id="employeeName" required placeholder="أدخل الاسم الكامل">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="employeeId"><i class="fas fa-id-card"></i> رقم الموظف *</label>
+                        <input type="text" id="employeeId" required placeholder="رقم الهوية أو الوظيفة">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="department"><i class="fas fa-building"></i> القسم *</label>
+                        <select id="department" required>
+                            <option value="">اختر القسم</option>
+                            <option value="الإدارة">الإدارة</option>
+                            <option value="المعلمين">المعلمين</option>
+                            <option value="شؤون الطلاب">شؤون الطلاب</option>
+                            <option value="تقنية المعلومات">تقنية المعلومات</option>
+                            <option value="المكتبة">المكتبة</option>
+                            <option value="أخرى">أخرى</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="position"><i class="fas fa-briefcase"></i> الموقع / الصف *</label>
+                        <input type="text" id="position" required placeholder="مثال: الصف الأول - مدرس رياضيات">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="handoverDate"><i class="fas fa-calendar-alt"></i> تاريخ التسليم *</label>
+                        <input type="date" id="handoverDate" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="returnDate"><i class="fas fa-calendar-check"></i> تاريخ الاسترجاع المتوقع</label>
+                        <input type="date" id="returnDate">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="assetType"><i class="fas fa-desktop"></i> نوع العهدة *</label>
+                    <select id="assetType" required>
+                        <option value="">اختر نوع العهدة</option>
+                        <option value="معمل حاسوب">معمل حاسوب كامل</option>
+                        <option value="جهاز حاسوب">جهاز حاسوب مكتبي</option>
+                        <option value="لابتوب">لابتوب</option>
+                        <option value="جهاز عرض">جهاز عرض (بروجيكتور)</option>
+                        <option value="طابعة">طابعة</option>
+                        <option value="تابلت">تابلت</option>
+                        <option value="شاشة">شاشة</option>
+                        <option value="أخرى">أخرى</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="assetDetails"><i class="fas fa-list-alt"></i> تفاصيل الأجهزة والمعدات *</label>
+                    <textarea id="assetDetails" rows="5" required placeholder="أدخل تفاصيل الأجهزة، الأرقام التسلسلية، المواصفات..."></textarea>
+                    <small style="color: #007B93;">يفضل ذكر كل جهاز على سطر منفصل مع رقمه التسلسلي إن وجد</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="notes"><i class="fas fa-sticky-note"></i> ملاحظات إضافية</label>
+                    <textarea id="notes" rows="3" placeholder="ملاحظات حول حالة الأجهزة أو شروط خاصة..."></textarea>
+                </div>
+                
+                <!-- Signature Field -->
+                <div class="form-group">
+                    <label><i class="fas fa-signature"></i> التوقيع الإلكتروني للموظف</label>
+                    <div class="signature-pad-container">
+                        <canvas id="signatureCanvas"></canvas>
+                        <div class="signature-placeholder" id="signaturePlaceholder">
+                            <i class="fas fa-signature"></i><br>
+                            ارسم توقيعك هنا
+                        </div>
+                    </div>
+                    <div class="signature-buttons">
+                        <button type="button" onclick="clearSignature()" class="btn" style="background-color: #6c757d; color: white; padding: 8px 15px;">
+                            <i class="fas fa-trash-alt"></i> مسح التوقيع
+                        </button>
+                        <button type="button" onclick="undoSignature()" class="btn" style="background-color: #ffc107; color: #212529; padding: 8px 15px;">
+                            <i class="fas fa-undo"></i> تراجع
+                        </button>
+                    </div>
+                    <input type="hidden" id="signatureData" name="signatureData">
+                    <small style="color: #007B93;">يرجى التوقيع باستخدام الماوس أو الإصبع في المساحة أعلاه (اختياري)</small>
+                </div>
+                
+                <div class="signature-options">
+                    <h4><i class="fas fa-info-circle"></i> ملاحظة هامة:</h4>
+                    <p>يمكن للموظف تعبئة النموذج وتوقيعه إلكترونياً، أو يمكن لقسم التقنية تعبئة النموذج وطباعته للتوقيع اليدوي.</p>
+                </div>
+                
+                <div class="buttons">
+                    <button type="button" class="btn btn-primary" onclick="generateAssetDocument()">
+                        <i class="fas fa-eye"></i> معاينة وتوليد العهدة
+                    </button>
+                    
+                    <button type="reset" class="btn btn-warning" onclick="resetForm()">
+                        <i class="fas fa-redo"></i> إعادة تعيين
+                    </button>
+                </div>
+            </form>
+        </section>
+        
+        <section class="preview-section">
+            <h2><i class="fas fa-file-pdf"></i> معاينة وثيقة العهدة</h2>
+            
+            <div class="preview-content" id="previewContent">
+                <!-- سيتم تعبئة هذا القسم تلقائياً -->
+                <div style="text-align: center; color: #9ACED8; padding: 50px;">
+                    <i class="fas fa-file-alt" style="font-size: 48px; margin-bottom: 20px;"></i>
+                    <h3>معاينة وثيقة العهدة ستظهر هنا</h3>
+                    <p>بعد تعبئة النموذج والضغط على "معاينة وتوليد العهدة"</p>
+                </div>
+            </div>
+            
+            <div class="buttons">
+                <button type="button" class="btn btn-secondary" onclick="exportToPDF()" id="exportBtn" disabled>
+                    <i class="fas fa-file-download"></i> تصدير إلى PDF
+                </button>
+                
+                <button type="button" class="btn btn-primary" onclick="printDocument()" id="printBtn" disabled>
+                    <i class="fas fa-print"></i> طباعة الوثيقة
+                </button>
+            </div>
+            
+            <div class="signature-box no-print">
+                <p><i class="fas fa-signature"></i> سيتم إضافة توقيع الموظف هنا بعد الطباعة</p>
+                <div class="signature-line" id="signatureLine">التوقيع: _________________________</div>
+                <div>الاسم: <span id="signatureName"></span></div>
+                <div>التاريخ: <span id="signatureDate"></span></div>
+            </div>
+        </section>
+    </div>
+    
+    <div class="footer">
+        <p>نظام عهدة تقنية المعلومات - مدارس العلم النافع الأهلية (بنين - بنات) © <span id="currentYear"></span></p>
+        <p>جميع البيانات محفوظة محلياً في جهازك ولا يتم إرسالها إلى أي خادم - الإدارة العامة للتعليم بمنطقة مكة المكرمة</p>
+        <p>العنوان الوطني: mdsa2882 - الرقم الموحد: 7001695415 - البريد الإلكتروني: elmnafe3@elmnafe3.com</p>
+    </div>
+
+    <script>
+        // متغيرات التوقيع
+        let signaturePad = null;
+        let canvas = null;
+        let isSignatureStarted = false;
+        
+        // دالة تهيئة لوحة التوقيع
+        function initializeSignaturePad() {
+            try {
+                canvas = document.getElementById('signatureCanvas');
+                
+                if (!canvas) {
+                    console.error('Canvas element not found');
+                    return;
+                }
+                
+                // الحصول على أبعاد الحاوية
+                const container = canvas.parentElement;
+                canvas.width = container.offsetWidth;
+                canvas.height = container.offsetHeight;
+                
+                // تهيئة signaturePad
+                signaturePad = new SignaturePad(canvas, {
+                    backgroundColor: 'white',
+                    penColor: '#007B93',
+                    minWidth: 1.5,
+                    maxWidth: 3,
+                    throttle: 5,
+                    velocityFilterWeight: 0.7
+                });
+                
+                // إضافة مستمعات الأحداث
+                signaturePad.addEventListener('beginStroke', function() {
+                    isSignatureStarted = true;
+                    document.getElementById('signaturePlaceholder').style.display = 'none';
+                    updateSignatureData();
+                });
+                
+                signaturePad.addEventListener('endStroke', function() {
+                    updateSignatureData();
+                });
+                
+                // تمكين التوقيع على الأجهزة اللوحية والهواتف
+                enableTouchSupport();
+                
+                console.log('تم تهيئة لوحة التوقيع بنجاح');
+                
+            } catch (error) {
+                console.error('خطأ في تهيئة لوحة التوقيع:', error);
+            }
+        }
+        
+        // دالة لتمكين دعم اللمس
+        function enableTouchSupport() {
+            if (!canvas) return;
+            
+            // منع سلوك المتصفح الافتراضي للمس
+            canvas.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+            }, { passive: false });
+            
+            canvas.addEventListener('touchmove', function(e) {
+                e.preventDefault();
+            }, { passive: false });
+        }
+        
+        // دالة مسح التوقيع
+        function clearSignature() {
+            if (signaturePad) {
+                signaturePad.clear();
+                document.getElementById('signatureData').value = '';
+                document.getElementById('signaturePlaceholder').style.display = 'block';
+                isSignatureStarted = false;
+            }
+        }
+        
+        // دالة التراجع عن التوقيع
+        function undoSignature() {
+            if (signaturePad) {
+                const data = signaturePad.toData();
+                if (data && data.length > 0) {
+                    data.pop();
+                    signaturePad.clear();
+                    signaturePad.fromData(data);
+                    updateSignatureData();
+                    
+                    if (data.length === 0) {
+                        document.getElementById('signaturePlaceholder').style.display = 'block';
+                        isSignatureStarted = false;
+                    }
+                }
+            }
+        }
+        
+        // دالة تحديث بيانات التوقيع
+        function updateSignatureData() {
+            if (signaturePad && !signaturePad.isEmpty()) {
+                const dataUrl = signaturePad.toDataURL('image/png');
+                document.getElementById('signatureData').value = dataUrl;
+            } else {
+                document.getElementById('signatureData').value = '';
+            }
+        }
+        
+        // استدعاء تهيئة التوقيع بعد تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            // تعيين التاريخ الحالي كتاريخ افتراضي
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+            document.getElementById('handoverDate').value = todayStr;
+            
+            // تعيين تاريخ الاسترجاع بعد أسبوع
+            const nextWeek = new Date(today);
+            nextWeek.setDate(today.getDate() + 7);
+            const nextWeekStr = nextWeek.toISOString().split('T')[0];
+            document.getElementById('returnDate').value = nextWeekStr;
+            
+            // تعيين السنة الحالية في التذييل
+            document.getElementById('currentYear').textContent = today.getFullYear();
+            
+            // تأخير تهيئة التوقيع لضمان تحميل كل العناصر
+            setTimeout(initializeSignaturePad, 500);
+            
+            // استرجاع آخر وثيقة تم إنشاؤها
+            loadLastAsset();
+            
+            // إعادة تهيئة التوقيع عند تغيير حجم النافذة
+            window.addEventListener('resize', function() {
+                if (signaturePad && canvas) {
+                    const container = canvas.parentElement;
+                    const originalData = signaturePad.toData();
+                    canvas.width = container.offsetWidth;
+                    canvas.height = container.offsetHeight;
+                    signaturePad.clear();
+                    
+                    if (originalData && originalData.length > 0) {
+                        signaturePad.fromData(originalData);
+                    }
+                }
+            });
+        });
+        
+        // دالة إعادة تعيين النموذج
+        function resetForm() {
+            document.getElementById('assetForm').reset();
+            clearSignature();
+            document.getElementById('previewContent').innerHTML = `
+                <div style="text-align: center; color: #9ACED8; padding: 50px;">
+                    <i class="fas fa-file-alt" style="font-size: 48px; margin-bottom: 20px;"></i>
+                    <h3>معاينة وثيقة العهدة ستظهر هنا</h3>
+                    <p>بعد تعبئة النموذج والضغط على "معاينة وتوليد العهدة"</p>
+                </div>
+            `;
+            document.getElementById('exportBtn').disabled = true;
+            document.getElementById('printBtn').disabled = true;
+            document.getElementById('successMessage').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+        
+        // دالة توليد وثيقة العهدة
+        function generateAssetDocument() {
+            // الحصول على القيم من النموذج
+            const employeeName = document.getElementById('employeeName').value;
+            const employeeId = document.getElementById('employeeId').value;
+            const department = document.getElementById('department').value;
+            const position = document.getElementById('position').value;
+            const handoverDate = document.getElementById('handoverDate').value;
+            const returnDate = document.getElementById('returnDate').value;
+            const assetType = document.getElementById('assetType').value;
+            const assetDetails = document.getElementById('assetDetails').value;
+            const notes = document.getElementById('notes').value;
+            const signatureData = document.getElementById('signatureData').value;
+            
+            // التحقق من تعبئة الحقول المطلوبة
+            if (!employeeName || !employeeId || !department || !position || !handoverDate || !assetType || !assetDetails) {
+                document.getElementById('errorMessage').style.display = 'block';
+                setTimeout(() => {
+                    document.getElementById('errorMessage').style.display = 'none';
+                }, 3000);
+                return;
+            }
+            
+            // إخفاء رسالة الخطأ وإظهار رسالة النجاح
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'block';
+            
+            // تمكين أزرار التصدير والطباعة
+            document.getElementById('exportBtn').disabled = false;
+            document.getElementById('printBtn').disabled = false;
+            
+            // تحديث توقيع الموظف
+            document.getElementById('signatureName').textContent = employeeName;
+            document.getElementById('signatureDate').textContent = formatDate(handoverDate);
+            
+            // تحويل التاريخ إلى تنسيق عربي
+            const arabicDate = formatDateToArabic(handoverDate);
+            const arabicReturnDate = returnDate ? formatDateToArabic(returnDate) : 'غير محدد';
+            
+            // إنشاء محتوى HTML للعهدة مع هوية المدرسة
+            const previewContent = `
+                <div class="school-header">
+                    <h4>الإدارة العامة للتعليم بمنطقة مكة المكرمة</h4>
+                    <h3 style="color: #007B93;">مدارس العلم النافع الأهلية (بنين - بنات)</h3>
+                    <p>حـــي الــربــوة - مكــة المكــرمــة - بجــوار جــامــع الــشيــخ عبــدالرحــمــن الدرويــش</p>
+                    <p>العنوان الوطني: mdsa2882 - الرقم الموحد: 7001695415 - البريد الإلكتروني: elmnafe3@elmnafe3.com</p>
+                </div>
+                
+                <div class="preview-header">
+                    <h3><i class="fas fa-file-contract"></i> وثيقة عهدة تقنية المعلومات</h3>
+                    <p>رقم العهدة: IT-${new Date().getTime().toString().slice(-8)}</p>
+                </div>
+                
+                <div style="margin-bottom: 25px;">
+                    <h4 style="color: #007B93; margin-bottom: 10px; border-bottom: 2px solid #9ACED8; padding-bottom: 5px;">بيانات المستلم:</h4>
+                    <table style="width: 100%; margin-bottom: 15px; border-collapse: collapse;">
+                        <tr>
+                            <td style="width: 30%; font-weight: bold; padding: 8px; background-color: #f2f9fb;">اسم الموظف:</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${employeeName}</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold; padding: 8px; background-color: #f2f9fb;">رقم الموظف:</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${employeeId}</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold; padding: 8px; background-color: #f2f9fb;">القسم:</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${department}</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold; padding: 8px; background-color: #f2f9fb;">الموقع/الصف:</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${position}</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold; padding: 8px; background-color: #f2f9fb;">تاريخ التسليم:</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${arabicDate}</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold; padding: 8px; background-color: #f2f9fb;">تاريخ الاسترجاع المتوقع:</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${arabicReturnDate}</td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div style="margin-bottom: 25px;">
+                    <h4 style="color: #007B93; margin-bottom: 10px; border-bottom: 2px solid #9ACED8; padding-bottom: 5px;">تفاصيل العهدة:</h4>
+                    <table style="width: 100%; margin-bottom: 10px;">
+                        <tr>
+                            <td style="width: 30%; font-weight: bold; padding: 8px; background-color: #f2f9fb;">نوع العهدة:</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${assetType}</td>
+                        </tr>
+                    </table>
+                    
+                    <h5 style="margin-top: 15px; margin-bottom: 10px; color: #007B93;">المعدات والأجهزة:</h5>
+                    <div style="background-color: #f2f9fb; padding: 15px; border-radius: 8px; border-right: 4px solid #007B93; min-height: 100px;">
+                        ${assetDetails.replace(/\n/g, '<br>')}
+                    </div>
+                </div>
+                
+                ${notes ? `
+                <div style="margin-bottom: 25px;">
+                    <h5 style="color: #007B93; margin-bottom: 10px;">ملاحظات إضافية:</h5>
+                    <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px dashed #9ACED8;">
+                        ${notes.replace(/\n/g, '<br>')}
+                    </div>
+                </div>
+                ` : ''}
+                
+                <div class="terms">
+                    <h4><i class="fas fa-file-contract"></i> شروط العهدة:</h4>
+                    <ol style="padding-right: 20px; margin-top: 10px;">
+                        <li style="margin-bottom: 8px;">يلتزم المستلم بالمحافظة على العهدة واستخدامها للأغراض الرسمية فقط.</li>
+                        <li style="margin-bottom: 8px;">يُحمل المستلم المسؤولية الكاملة عن الأجهزة المستلمة وعليه إرجاعها بنفس الحالة.</li>
+                        <li style="margin-bottom: 8px;">في حالة حدوث أي عطل، يجب إبلاغ قسم تقنية المعلومات فوراً وعدم محاولة الإصلاح الذاتي.</li>
+                        <li style="margin-bottom: 8px;">يمنع نقل العهدة لأي شخص آخر أو مكان آخر دون موافقة كتابية من القسم.</li>
+                        <li style="margin-bottom: 8px;">عند انتهاء الحاجة أو إنهاء الخدمة، يجب إعادة العهدة خلال أسبوع.</li>
+                    </ol>
+                </div>
+                
+                <div class="signature-area">
+                    <div>
+                        <div style="border-top: 2px solid #007B93; width: 80%; margin: 0 auto; padding-top: 10px; margin-bottom: 20px;">
+                            توقيع الموظف المستلم
+                        </div>
+                        ${signatureData ? `<img src="${signatureData}" style="max-width: 200px; max-height: 80px; border: 1px solid #ddd; padding: 5px; background: white; margin-bottom: 10px;" alt="توقيع الموظف">` : 
+                        `<div style="height: 80px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; color: #999;">
+                            _________________________
+                        </div>`}
+                        <div>
+                            <strong>الاسم:</strong> ${employeeName}<br>
+                            <strong>التاريخ:</strong> ${arabicDate}
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div style="border-top: 2px solid #007B93; width: 80%; margin: 0 auto; padding-top: 10px; margin-bottom: 20px;">
+                            توقيع مسؤول تقنية المعلومات
+                        </div>
+                        <div style="height: 80px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; color: #999;">
+                            _________________________
+                        </div>
+                        <div>
+                            <strong>الاسم:</strong> _________________________<br>
+                            <strong>التاريخ:</strong> _________________________
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="digital-signature">
+                    <p style="font-size: 12px; color: #666; text-align: center; margin-top: 30px;">
+                        تم إنشاء هذه الوثيقة إلكترونياً عبر نظام عهدة تقنية المعلومات - مدارس العلم النافع الأهلية
+                    </p>
+                    <p style="font-size: 11px; color: #999; text-align: center;">
+                        تاريخ الإنشاء: ${new Date().toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                </div>
+            `;
+            
+            // تعيين المحتوى في منطقة المعاينة
+            document.getElementById('previewContent').innerHTML = previewContent;
+            
+            // حفظ البيانات محلياً في المتصفح (LocalStorage)
+            const assetData = {
+                employeeName,
+                employeeId,
+                department,
+                position,
+                handoverDate,
+                returnDate,
+                assetType,
+                assetDetails,
+                notes,
+                signatureData,
+                generatedDate: new Date().toISOString()
+            };
+            
+            localStorage.setItem('lastAssetDocument', JSON.stringify(assetData));
+            
+            // إخفاء رسالة النجاح بعد 3 ثوان
+            setTimeout(() => {
+                document.getElementById('successMessage').style.display = 'none';
+            }, 3000);
+        }
+        
+        // دالة تصدير إلى PDF
+        function exportToPDF() {
+            const element = document.getElementById('previewContent');
+            const opt = {
+                margin: [10, 10, 10, 10],
+                filename: `عهدة_${document.getElementById('employeeName').value}_${formatDateForFilename()}.pdf`,
+                image: { type: 'jpeg', quality: 1.0 },
+                html2canvas: { 
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    windowWidth: element.scrollWidth,
+                    windowHeight: element.scrollHeight,
+                    backgroundColor: '#FFFFFF'
+                },
+                jsPDF: { 
+                    unit: 'mm', 
+                    format: 'a4', 
+                    orientation: 'portrait',
+                    compress: true
+                }
+            };
+            
+            // تصدير إلى PDF
+            html2pdf().set(opt).from(element).save();
+        }
+        
+        // دالة الطباعة
+        function printDocument() {
+            window.print();
+        }
+        
+        // دالة تنسيق التاريخ
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ar-EG', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+        
+        // دالة تنسيق التاريخ بالعربية
+        function formatDateToArabic(dateString) {
+            const date = new Date(dateString);
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            return date.toLocaleDateString('ar-EG', options);
+        }
+        
+        // دالة تنسيق التاريخ لاسم الملف
+        function formatDateForFilename() {
+            const now = new Date();
+            return `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}_${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}`;
+        }
+        
+        // استرجاع آخر وثيقة تم إنشاؤها
+        function loadLastAsset() {
+            const lastAsset = localStorage.getItem('lastAssetDocument');
+            if (lastAsset) {
+                try {
+                    const assetData = JSON.parse(lastAsset);
+                    
+                    // تعبئة النموذب بالبيانات السابقة
+                    document.getElementById('employeeName').value = assetData.employeeName || '';
+                    document.getElementById('employeeId').value = assetData.employeeId || '';
+                    document.getElementById('department').value = assetData.department || '';
+                    document.getElementById('position').value = assetData.position || '';
+                    document.getElementById('handoverDate').value = assetData.handoverDate || '';
+                    document.getElementById('returnDate').value = assetData.returnDate || '';
+                    document.getElementById('assetType').value = assetData.assetType || '';
+                    document.getElementById('assetDetails').value = assetData.assetDetails || '';
+                    document.getElementById('notes').value = assetData.notes || '';
+                    
+                    // توليد الوثيقة تلقائياً
+                    if (assetData.employeeName) {
+                        setTimeout(() => {
+                            if (assetData.signatureData) {
+                                document.getElementById('signatureData').value = assetData.signatureData;
+                            }
+                            generateAssetDocument();
+                        }, 1000);
+                    }
+                } catch (error) {
+                    console.error('خطأ في تحميل البيانات السابقة:', error);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
