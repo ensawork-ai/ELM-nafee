@@ -1249,6 +1249,370 @@
                 }
             }
         }
+        // ============================================
+// إعدادات Google Apps Script
+// ============================================
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXx/exec";
+
+// ============================================
+// دالة إرسال البيانات إلى Google Drive و Sheets
+// ============================================
+async function sendToGoogleDriveAndSheets() {
+    try {
+        // جمع البيانات من النموذج
+        const assetData = {
+            employeeName: document.getElementById('employeeName').value,
+            employeeId: document.getElementById('employeeId').value,
+            department: document.getElementById('department').value,
+            position: document.getElementById('position').value,
+            handoverDate: document.getElementById('handoverDate').value,
+            returnDate: document.getElementById('returnDate').value || null,
+            assetType: document.getElementById('assetType').value,
+            assetDetails: document.getElementById('assetDetails').value,
+            notes: document.getElementById('notes').value || '',
+            signatureData: document.getElementById('signatureData').value || null,
+            assetNumber: "IT-" + new Date().getTime().toString().slice(-8)
+        };
+
+        // التحقق من البيانات المطلوبة
+        if (!assetData.employeeName || !assetData.employeeId || !assetData.department || 
+            !assetData.position || !assetData.handoverDate || !assetData.assetType || !assetData.assetDetails) {
+            showMessage("error", "الرجاء تعبئة جميع الحقول المطلوبة قبل الحفظ في السحابة");
+            return;
+        }
+
+        // عرض رسالة التحميل
+        showLoading("جاري حفظ البيانات في Google Drive و Google Sheets...");
+
+        // إرسال البيانات إلى Google Apps Script
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'cors',
+            redirect: 'follow',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(assetData)
+        });
+
+        // التحقق من الاستجابة
+        if (!response.ok) {
+            throw new Error(`خطأ في الإرسال: ${response.status} ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        
+        // إخفاء رسالة التحميل
+        hideLoading();
+
+        if (result.success) {
+            // عرض رسالة النجاح مع التفاصيل
+            showMessage("success", 
+                `✅ تم حفظ البيانات بنجاح!<br>
+                 📄 <a href="${result.details.pdfUrl}" target="_blank" style="color: white; text-decoration: underline;">افتح ملف PDF</a><br>
+                 📊 تمت الإضافة إلى السجلات`
+            );
+            
+            // حفظ بيانات الإرسال محلياً
+            localStorage.setItem('lastCloudSave', JSON.stringify({
+                ...assetData,
+                cloudSaveTime: new Date().toISOString(),
+                pdfUrl: result.details.pdfUrl,
+                assetNumber: result.details.assetNumber
+            }));
+            
+            console.log("✅ تم الحفظ في السحابة:", result);
+            
+        } else {
+            throw new Error(result.error || "خطأ غير معروف في الخادم");
+        }
+
+    } catch (error) {
+        hideLoading();
+        console.error("❌ خطأ في الإرسال:", error);
+        showMessage("error", 
+            `❌ فشل حفظ البيانات في السحابة<br>
+             <small>${error.message}</small><br>
+             <small>يمكنك استخدام النسخة المحلية وحفظ PDF يدوياً</small>`
+        );
+    }
+}
+
+// ============================================
+// دالة عرض رسالة التحميل
+// ============================================
+function showLoading(message) {
+    // إزالة أي رسالة تحميل سابقة
+    hideLoading();
+    
+    const loadingDiv = document.createElement('div');
+    loadingDiv.id = 'cloudLoading';
+    loadingDiv.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 123, 147, 0.95);
+        color: white;
+        padding: 30px 40px;
+        border-radius: 15px;
+        z-index: 99999;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        text-align: center;
+        min-width: 300px;
+        backdrop-filter: blur(10px);
+    `;
+    
+    loadingDiv.innerHTML = `
+        <div style="margin-bottom: 20px;">
+            <i class="fas fa-cloud-upload-alt fa-spin" style="font-size: 48px;"></i>
+        </div>
+        <h3 style="margin: 0 0 15px 0; font-weight: bold;">جاري الحفظ في السحابة</h3>
+        <p style="margin: 0; font-size: 16px;">${message}</p>
+        <div style="margin-top: 20px; font-size: 14px; opacity: 0.8;">
+            <i class="fas fa-info-circle"></i> الرجاء عدم إغلاق الصفحة
+        </div>
+    `;
+    
+    document.body.appendChild(loadingDiv);
+    
+    // إضافة طبقة شفافة خلف الرسالة
+    const overlay = document.createElement('div');
+    overlay.id = 'cloudLoadingOverlay';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 99998;
+    `;
+    document.body.appendChild(overlay);
+}
+
+// ============================================
+// دالة إخفاء رسالة التحميل
+// ============================================
+function hideLoading() {
+    const loadingDiv = document.getElementById('cloudLoading');
+    const overlay = document.getElementById('cloudLoadingOverlay');
+    
+    if (loadingDiv) loadingDiv.remove();
+    if (overlay) overlay.remove();
+}
+
+// ============================================
+// دالة عرض الرسائل
+// ============================================
+function showMessage(type, message) {
+    // إزالة أي رسالة سابقة
+    const oldMessage = document.getElementById('cloudMessage');
+    if (oldMessage) oldMessage.remove();
+    
+    const messageDiv = document.createElement('div');
+    messageDiv.id = 'cloudMessage';
+    
+    const colors = {
+        success: { bg: '#28a745', icon: 'fa-check-circle' },
+        error: { bg: '#dc3545', icon: 'fa-exclamation-circle' },
+        warning: { bg: '#ffc107', icon: 'fa-exclamation-triangle' }
+    };
+    
+    const style = colors[type] || colors.info;
+    
+    messageDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${style.bg};
+        color: white;
+        padding: 20px 25px;
+        border-radius: 10px;
+        z-index: 9999;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        max-width: 400px;
+        animation: slideIn 0.3s ease-out;
+    `;
+    
+    messageDiv.innerHTML = `
+        <div style="display: flex; align-items: flex-start; gap: 15px;">
+            <i class="fas ${style.icon}" style="font-size: 24px; margin-top: 3px;"></i>
+            <div style="flex: 1;">
+                <div style="font-weight: bold; margin-bottom: 5px; font-size: 16px;">
+                    ${type === 'success' ? 'نجاح' : type === 'error' ? 'خطأ' : 'تنبيه'}
+                </div>
+                <div style="font-size: 14px; line-height: 1.5;">${message}</div>
+            </div>
+            <button onclick="this.parentElement.parentElement.remove()" 
+                    style="background: none; border: none; color: white; font-size: 18px; cursor: pointer; padding: 0 5px;">
+                &times;
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(messageDiv);
+    
+    // إزالة الرسالة تلقائياً بعد 8 ثواني
+    setTimeout(() => {
+        if (document.getElementById('cloudMessage')) {
+            messageDiv.style.animation = 'slideOut 0.3s ease-out';
+            setTimeout(() => messageDiv.remove(), 300);
+        }
+    }, 8000);
+    
+    // إضافة أنيميشن CSS
+    if (!document.getElementById('cloudMessageStyles')) {
+        const styleEl = document.createElement('style');
+        styleEl.id = 'cloudMessageStyles';
+        styleEl.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(styleEl);
+    }
+}
+
+// ============================================
+// إضافة زر الحفظ السحابي
+// ============================================
+function addCloudSaveButton() {
+    // البحث عن زر التصدير
+    const exportBtn = document.getElementById('exportBtn');
+    if (!exportBtn) {
+        console.warn("⚠️ زر التصدير غير موجود");
+        setTimeout(addCloudSaveButton, 1000);
+        return;
+    }
+    
+    // إنشاء زر الحفظ السحابي
+    const cloudBtn = document.createElement('button');
+    cloudBtn.type = 'button';
+    cloudBtn.className = 'btn';
+    cloudBtn.id = 'cloudSaveBtn';
+    cloudBtn.style.cssText = `
+        background: linear-gradient(135deg, #FF6B35 0%, #FF8E53 100%);
+        color: white;
+        padding: 14px 28px;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        flex: 1;
+        margin-left: 10px;
+    `;
+    
+    cloudBtn.innerHTML = `
+        <i class="fas fa-cloud-upload-alt"></i>
+        حفظ في Google Drive
+    `;
+    
+    cloudBtn.onmouseover = function() {
+        this.style.transform = 'translateY(-3px)';
+        this.style.boxShadow = '0 7px 14px rgba(255, 107, 53, 0.3)';
+    };
+    
+    cloudBtn.onmouseout = function() {
+        this.style.transform = 'translateY(0)';
+        this.style.boxShadow = 'none';
+    };
+    
+    cloudBtn.onclick = async function() {
+        // تعطيل الزر أثناء المعالجة
+        this.disabled = true;
+        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
+        
+        try {
+            // أولاً إنشاء معاينة المحلية
+            generateAssetDocument();
+            
+            // ثم إرسال إلى السحابة
+            await sendToGoogleDriveAndSheets();
+            
+        } catch (error) {
+            console.error("خطأ في العملية:", error);
+        } finally {
+            // إعادة تمكين الزر
+            setTimeout(() => {
+                this.disabled = false;
+                this.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> حفظ في Google Drive';
+            }, 3000);
+        }
+    };
+    
+    // إضافة الزر بجانب زر التصدير
+    const buttonsContainer = exportBtn.parentNode;
+    buttonsContainer.insertBefore(cloudBtn, exportBtn.nextSibling);
+    
+    console.log("✅ تم إضافة زر الحفظ السحابي");
+}
+
+// ============================================
+// إضافة زر فتح السجلات
+// ============================================
+function addRecordsButton() {
+    // إنشاء زر فتح السجلات
+    const recordsBtn = document.createElement('a');
+    recordsBtn.href = `https://docs.google.com/spreadsheets/d/1IvYFY8pWpch6y6cLPoA3H_e1ipOclUdbGGLYri0R0s0/edit`;
+    recordsBtn.target = '_blank';
+    recordsBtn.className = 'btn';
+    recordsBtn.style.cssText = `
+        background: linear-gradient(135deg, #0F9D58 0%, #1DB954 100%);
+        color: white;
+        padding: 14px 28px;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        flex: 1;
+        margin-left: 10px;
+        text-decoration: none;
+    `;
+    
+    recordsBtn.innerHTML = `
+        <i class="fas fa-table"></i>
+        فتح سجلات Google Sheets
+    `;
+    
+    // إضافة الزر في التذييل
+    const footer = document.querySelector('.footer');
+    if (footer) {
+        const btnContainer = document.createElement('div');
+        btnContainer.style.cssText = 'margin-top: 20px; display: flex; justify-content: center; gap: 15px;';
+        btnContainer.appendChild(recordsBtn);
+        footer.appendChild(btnContainer);
+    }
+}
+
+// ============================================
+// تهيئة الأزرار عند تحميل الصفحة
+// ============================================
+document.addEventListener('DOMContentLoaded', function() {
+    // انتظر ثانية لضمان تحميل كل العناصر
+    setTimeout(() => {
+        addCloudSaveButton();
+        addRecordsButton();
+        console.log("✅ تم تهيئة أزرار النظام السحابي");
+    }, 1500);
+});
     </script>
 </body>
 </html>
