@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Almarai:wght@400;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/signature_pad/4.1.6/signature_pad.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -154,12 +153,12 @@
             background-color: white;
             position: relative;
             height: 150px;
+            cursor: crosshair;
         }
         
         #signatureCanvas {
             width: 100%;
             height: 100%;
-            cursor: crosshair;
             background-color: white;
         }
         
@@ -412,10 +411,22 @@
                 width: 100%;
                 border: none;
                 box-shadow: none;
+                padding: 20px;
+                background: white;
             }
             
             .no-print {
                 display: none !important;
+            }
+            
+            @page {
+                size: A4;
+                margin: 20mm;
+            }
+            
+            body {
+                margin: 0;
+                padding: 0;
             }
         }
         
@@ -531,26 +542,23 @@
                     <textarea id="notes" rows="3" placeholder="ملاحظات حول حالة الأجهزة أو شروط خاصة..."></textarea>
                 </div>
                 
-                <!-- Signature Field -->
+                <!-- Signature Field - SIMPLIFIED -->
                 <div class="form-group">
                     <label><i class="fas fa-signature"></i> التوقيع الإلكتروني للموظف (اختياري)</label>
-                    <div class="signature-pad-container">
+                    <div class="signature-pad-container" id="signatureContainer">
                         <canvas id="signatureCanvas"></canvas>
                         <div class="signature-placeholder" id="signaturePlaceholder">
                             <i class="fas fa-signature"></i><br>
-                            ارسم توقيعك هنا (اختياري)
+                            انقر واسحب لرسم توقيعك هنا (اختياري)
                         </div>
                     </div>
                     <div class="signature-buttons">
                         <button type="button" onclick="clearSignature()" class="btn" style="background-color: #6c757d; color: white; padding: 8px 15px;">
                             <i class="fas fa-trash-alt"></i> مسح التوقيع
                         </button>
-                        <button type="button" onclick="undoSignature()" class="btn" style="background-color: #ffc107; color: #212529; padding: 8px 15px;">
-                            <i class="fas fa-undo"></i> تراجع
-                        </button>
                     </div>
                     <input type="hidden" id="signatureData" name="signatureData">
-                    <small style="color: #007B93;">يمكنك التوقيع باستخدام الماوس أو الإصبع (اختياري)</small>
+                    <small style="color: #007B93;">يمكنك التوقيع باستخدام الماوس أو الإصبع (اختياري) أو تركه فارغاً للتوقيع اليدوي بعد الطباعة</small>
                 </div>
                 
                 <div class="signature-options">
@@ -608,16 +616,16 @@
     </div>
 
     <script>
-        // متغيرات التوقيع
-        let signaturePad = null;
+        // متغيرات التوقيع المبسط
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
         let canvas = null;
-        let isSignatureStarted = false;
+        let ctx = null;
         
-        // دالة تهيئة لوحة التوقيع - إصدار محسن
-        function initializeSignaturePad() {
+        // دالة تهيئة التوقيع المبسط
+        function initializeSignature() {
             try {
-                console.log('بدء تهيئة لوحة التوقيع...');
-                
                 canvas = document.getElementById('signatureCanvas');
                 
                 if (!canvas) {
@@ -625,129 +633,125 @@
                     return;
                 }
                 
-                console.log('تم العثور على canvas، الأبعاد الأولية:', canvas.offsetWidth, 'x', canvas.offsetHeight);
-                
                 // الحصول على أبعاد الحاوية
-                const container = canvas.parentElement;
-                const width = container.offsetWidth;
-                const height = container.offsetHeight;
+                const container = document.getElementById('signatureContainer');
+                canvas.width = container.offsetWidth;
+                canvas.height = container.offsetHeight;
                 
-                console.log('أبعاد الحاوية:', width, 'x', height);
-                
-                // ضبط أبعاد الـ canvas
-                canvas.width = width;
-                canvas.height = height;
-                
-                // إعداد السياق الرسومي
-                const ctx = canvas.getContext('2d');
+                // الحصول على السياق الرسومي
+                ctx = canvas.getContext('2d');
                 ctx.fillStyle = 'white';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.strokeStyle = '#007B93';
+                ctx.lineWidth = 2;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
                 
-                // تهيئة signaturePad مع إعدادات محسنة
-                signaturePad = new SignaturePad(canvas, {
-                    backgroundColor: 'rgba(255, 255, 255, 0)',
-                    penColor: '#007B93',
-                    minWidth: 1,
-                    maxWidth: 3,
-                    throttle: 0,
-                    velocityFilterWeight: 0.7,
-                    minDistance: 0
-                });
+                // إضافة مستمعات الأحداث
+                canvas.addEventListener('mousedown', startDrawing);
+                canvas.addEventListener('mousemove', draw);
+                canvas.addEventListener('mouseup', stopDrawing);
+                canvas.addEventListener('mouseout', stopDrawing);
                 
-                console.log('تم تهيئة SignaturePad بنجاح');
+                // إضافة مستمعات اللمس
+                canvas.addEventListener('touchstart', handleTouchStart);
+                canvas.addEventListener('touchmove', handleTouchMove);
+                canvas.addEventListener('touchend', stopDrawing);
                 
-                // إضافة مستمعات الأحداث بشكل مباشر
-                canvas.addEventListener('mousedown', function(e) {
-                    isSignatureStarted = true;
-                    document.getElementById('signaturePlaceholder').style.display = 'none';
-                    console.log('بدأ التوقيع بالماوس');
-                });
-                
-                canvas.addEventListener('touchstart', function(e) {
-                    isSignatureStarted = true;
-                    document.getElementById('signaturePlaceholder').style.display = 'none';
-                    console.log('بدأ التوقيع باللمس');
-                    // منع التمرير عند اللمس
-                    e.preventDefault();
-                }, { passive: false });
-                
-                canvas.addEventListener('mouseup', function() {
-                    updateSignatureData();
-                });
-                
-                canvas.addEventListener('touchend', function() {
-                    updateSignatureData();
-                });
-                
-                // تمكين اللمس بشكل كامل
-                enableTouchSupport();
-                
-                console.log('لوحة التوقيع جاهزة للاستخدام');
+                console.log('تم تهيئة التوقيع المبسط بنجاح');
                 
             } catch (error) {
-                console.error('خطأ في تهيئة لوحة التوقيع:', error);
+                console.error('خطأ في تهيئة التوقيع:', error);
             }
         }
         
-        // دالة لتمكين دعم اللمس
-        function enableTouchSupport() {
-            if (!canvas) return;
-            
-            // منع السلوك الافتراضي للمس لمنع التمرير
-            canvas.addEventListener('touchmove', function(e) {
-                e.preventDefault();
-            }, { passive: false });
-            
-            // إضافة styles إضافية للـ canvas
-            canvas.style.touchAction = 'none';
-            canvas.style.msTouchAction = 'none';
-            canvas.style.webkitTapHighlightColor = 'rgba(0,0,0,0)';
-            
-            console.log('تم تمكين دعم اللمس للـ canvas');
+        // بدء الرسم
+        function startDrawing(e) {
+            isDrawing = true;
+            document.getElementById('signaturePlaceholder').style.display = 'none';
+            [lastX, lastY] = getCoordinates(e);
         }
         
-        // دالة مسح التوقيع
+        // الرسم
+        function draw(e) {
+            if (!isDrawing) return;
+            e.preventDefault();
+            
+            const [x, y] = getCoordinates(e);
+            
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            
+            [lastX, lastY] = [x, y];
+            
+            // حفظ التوقيع كصورة
+            saveSignature();
+        }
+        
+        // التوقف عن الرسم
+        function stopDrawing() {
+            isDrawing = false;
+        }
+        
+        // معالجة اللمس
+        function handleTouchStart(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent('mousedown', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            canvas.dispatchEvent(mouseEvent);
+        }
+        
+        function handleTouchMove(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent('mousemove', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            canvas.dispatchEvent(mouseEvent);
+        }
+        
+        // الحصول على الإحداثيات
+        function getCoordinates(e) {
+            const rect = canvas.getBoundingClientRect();
+            let x, y;
+            
+            if (e.type.includes('touch')) {
+                x = e.touches[0].clientX - rect.left;
+                y = e.touches[0].clientY - rect.top;
+            } else {
+                x = e.clientX - rect.left;
+                y = e.clientY - rect.top;
+            }
+            
+            return [x, y];
+        }
+        
+        // مسح التوقيع
         function clearSignature() {
-            if (signaturePad) {
-                signaturePad.clear();
+            if (ctx) {
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
                 document.getElementById('signatureData').value = '';
                 document.getElementById('signaturePlaceholder').style.display = 'block';
-                isSignatureStarted = false;
                 console.log('تم مسح التوقيع');
             }
         }
         
-        // دالة التراجع عن التوقيع
-        function undoSignature() {
-            if (signaturePad) {
-                const data = signaturePad.toData();
-                if (data && data.length > 0) {
-                    data.pop();
-                    signaturePad.clear();
-                    signaturePad.fromData(data);
-                    updateSignatureData();
-                    
-                    if (data.length === 0) {
-                        document.getElementById('signaturePlaceholder').style.display = 'block';
-                        isSignatureStarted = false;
-                    }
-                    console.log('تم التراجع عن آخر خط في التوقيع');
-                }
-            }
-        }
-        
-        // دالة تحديث بيانات التوقيع
-        function updateSignatureData() {
-            if (signaturePad && !signaturePad.isEmpty()) {
+        // حفظ التوقيع كصورة
+        function saveSignature() {
+            if (canvas) {
                 try {
-                    const dataUrl = signaturePad.toDataURL('image/png');
+                    const dataUrl = canvas.toDataURL('image/png');
                     document.getElementById('signatureData').value = dataUrl;
-                    console.log('تم تحديث بيانات التوقيع');
                 } catch (error) {
-                    console.error('خطأ في تحويل التوقيع إلى صورة:', error);
+                    console.error('خطأ في حفظ التوقيع:', error);
                 }
-            } else {
-                document.getElementById('signatureData').value = '';
             }
         }
         
@@ -771,16 +775,8 @@
             
             // تهيئة التوقيع بعد تحميل كل العناصر
             setTimeout(function() {
-                console.log('بدء تهيئة لوحة التوقيع...');
-                initializeSignaturePad();
-                
-                // إعادة تهيئة بعد تأخير إضافي للتأكد من تحميل كل شيء
-                setTimeout(function() {
-                    if (!signaturePad || signaturePad.isEmpty()) {
-                        console.log('إعادة تهيئة التوقيع للتأكد من العمل...');
-                        initializeSignaturePad();
-                    }
-                }, 500);
+                console.log('بدء تهيئة التوقيع...');
+                initializeSignature();
             }, 300);
             
             // استرجاع آخر وثيقة تم إنشاؤها
@@ -788,9 +784,8 @@
             
             // إعادة تهيئة التوقيع عند تغيير حجم النافذة
             window.addEventListener('resize', function() {
-                if (signaturePad && canvas) {
-                    console.log('إعادة تهيئة التوقيع بعد تغيير الحجم...');
-                    setTimeout(initializeSignaturePad, 100);
+                if (canvas) {
+                    setTimeout(initializeSignature, 100);
                 }
             });
         });
@@ -884,119 +879,121 @@
             
             // إنشاء محتوى HTML للعهدة مع هوية المدرسة
             const previewContent = `
-                <div class="school-header">
-                    <h4>الإدارة العامة للتعليم بمنطقة مكة المكرمة</h4>
-                    <h3 style="color: #007B93;">مدارس العلم النافع الأهلية (بنين - بنات)</h3>
-                    <p>حـــي الــربــوة - مكــة المكــرمــة - بجــوار جــامــع الــشيــخ عبــدالرحــمــن الدرويــش</p>
-                    <p>العنوان الوطني: mdsa2882 - الرقم الموحد: 7001695415 - البريد الإلكتروني: elmnafe3@elmnafe3.com</p>
-                </div>
-                
-                <div class="preview-header">
-                    <h3><i class="fas fa-file-contract"></i> وثيقة عهدة تقنية المعلومات</h3>
-                    <p>رقم العهدة: IT-${new Date().getTime().toString().slice(-8)}</p>
-                </div>
-                
-                <div style="margin-bottom: 25px;">
-                    <h4 style="color: #007B93; margin-bottom: 10px; border-bottom: 2px solid #9ACED8; padding-bottom: 5px;">بيانات المستلم:</h4>
-                    <table style="width: 100%; margin-bottom: 15px; border-collapse: collapse;">
-                        <tr>
-                            <td style="width: 30%; font-weight: bold; padding: 8px; background-color: #f2f9fb;">اسم الموظف:</td>
-                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${employeeName}</td>
-                        </tr>
-                        <tr>
-                            <td style="font-weight: bold; padding: 8px; background-color: #f2f9fb;">رقم الموظف:</td>
-                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${employeeId}</td>
-                        </tr>
-                        <tr>
-                            <td style="font-weight: bold; padding: 8px; background-color: #f2f9fb;">القسم:</td>
-                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${department}</td>
-                        </tr>
-                        <tr>
-                            <td style="font-weight: bold; padding: 8px; background-color: #f2f9fb;">الموقع/الصف:</td>
-                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${position}</td>
-                        </tr>
-                        <tr>
-                            <td style="font-weight: bold; padding: 8px; background-color: #f2f9fb;">تاريخ التسليم:</td>
-                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${arabicDate}</td>
-                        </tr>
-                        <tr>
-                            <td style="font-weight: bold; padding: 8px; background-color: #f2f9fb;">تاريخ الاسترجاع المتوقع:</td>
-                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${arabicReturnDate}</td>
-                        </tr>
-                    </table>
-                </div>
-                
-                <div style="margin-bottom: 25px;">
-                    <h4 style="color: #007B93; margin-bottom: 10px; border-bottom: 2px solid #9ACED8; padding-bottom: 5px;">تفاصيل العهدة:</h4>
-                    <table style="width: 100%; margin-bottom: 10px;">
-                        <tr>
-                            <td style="width: 30%; font-weight: bold; padding: 8px; background-color: #f2f9fb;">نوع العهدة:</td>
-                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${assetType}</td>
-                        </tr>
-                    </table>
+                <div style="width: 100%; max-width: 210mm; margin: 0 auto; padding: 20mm; background: white; box-sizing: border-box;">
+                    <div class="school-header" style="page-break-inside: avoid;">
+                        <h4>الإدارة العامة للتعليم بمنطقة مكة المكرمة</h4>
+                        <h3 style="color: #007B93; margin: 10px 0;">مدارس العلم النافع الأهلية (بنين - بنات)</h3>
+                        <p style="font-size: 14px; margin: 5px 0;">حـــي الــربــوة - مكــة المكــرمــة - بجــوار جــامــع الــشيــخ عبــدالرحــمــن الدرويــش</p>
+                        <p style="font-size: 12px; margin: 5px 0; color: #666;">العنوان الوطني: mdsa2882 - الرقم الموحد: 7001695415 - البريد الإلكتروني: elmnafe3@elmnafe3.com</p>
+                    </div>
                     
-                    <h5 style="margin-top: 15px; margin-bottom: 10px; color: #007B93;">المعدات والأجهزة:</h5>
-                    <div style="background-color: #f2f9fb; padding: 15px; border-radius: 8px; border-right: 4px solid #007B93; min-height: 100px;">
-                        ${assetDetails.replace(/\n/g, '<br>')}
+                    <div class="preview-header" style="page-break-inside: avoid;">
+                        <h3><i class="fas fa-file-contract"></i> وثيقة عهدة تقنية المعلومات</h3>
+                        <p style="color: #007B93; font-weight: bold;">رقم العهدة: IT-${new Date().getTime().toString().slice(-8)}</p>
                     </div>
-                </div>
-                
-                ${notes ? `
-                <div style="margin-bottom: 25px;">
-                    <h5 style="color: #007B93; margin-bottom: 10px;">ملاحظات إضافية:</h5>
-                    <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px dashed #9ACED8;">
-                        ${notes.replace(/\n/g, '<br>')}
+                    
+                    <div style="margin-bottom: 20px; page-break-inside: avoid;">
+                        <h4 style="color: #007B93; margin-bottom: 10px; border-bottom: 2px solid #9ACED8; padding-bottom: 5px;">بيانات المستلم:</h4>
+                        <table style="width: 100%; margin-bottom: 15px; border-collapse: collapse;">
+                            <tr>
+                                <td style="width: 30%; font-weight: bold; padding: 8px; background-color: #f2f9fb;">اسم الموظف:</td>
+                                <td style="padding: 8px; border-bottom: 1px solid #ddd;">${employeeName}</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold; padding: 8px; background-color: #f2f9fb;">رقم الموظف:</td>
+                                <td style="padding: 8px; border-bottom: 1px solid #ddd;">${employeeId}</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold; padding: 8px; background-color: #f2f9fb;">القسم:</td>
+                                <td style="padding: 8px; border-bottom: 1px solid #ddd;">${department}</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold; padding: 8px; background-color: #f2f9fb;">الموقع/الصف:</td>
+                                <td style="padding: 8px; border-bottom: 1px solid #ddd;">${position}</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold; padding: 8px; background-color: #f2f9fb;">تاريخ التسليم:</td>
+                                <td style="padding: 8px; border-bottom: 1px solid #ddd;">${arabicDate}</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold; padding: 8px; background-color: #f2f9fb;">تاريخ الاسترجاع المتوقع:</td>
+                                <td style="padding: 8px; border-bottom: 1px solid #ddd;">${arabicReturnDate}</td>
+                            </tr>
+                        </table>
                     </div>
-                </div>
-                ` : ''}
-                
-                <div class="terms">
-                    <h4><i class="fas fa-file-contract"></i> شروط العهدة:</h4>
-                    <ol style="padding-right: 20px; margin-top: 10px;">
-                        <li style="margin-bottom: 8px;">يلتزم المستلم بالمحافظة على العهدة واستخدامها للأغراض الرسمية فقط.</li>
-                        <li style="margin-bottom: 8px;">يُحمل المستلم المسؤولية الكاملة عن الأجهزة المستلمة وعليه إرجاعها بنفس الحالة.</li>
-                        <li style="margin-bottom: 8px;">في حالة حدوث أي عطل، يجب إبلاغ قسم تقنية المعلومات فوراً وعدم محاولة الإصلاح الذاتي.</li>
-                        <li style="margin-bottom: 8px;">يمنع نقل العهدة لأي شخص آخر أو مكان آخر دون موافقة كتابية من القسم.</li>
-                        <li style="margin-bottom: 8px;">عند انتهاء الحاجة أو إنهاء الخدمة، يجب إعادة العهدة خلال أسبوع.</li>
-                    </ol>
-                </div>
-                
-                <div class="signature-area">
-                    <div>
-                        <div style="border-top: 2px solid #007B93; width: 80%; margin: 0 auto; padding-top: 10px; margin-bottom: 20px;">
-                            توقيع الموظف المستلم
-                        </div>
-                        ${signatureData ? `<img src="${signatureData}" style="max-width: 200px; max-height: 80px; border: 1px solid #ddd; padding: 5px; background: white; margin-bottom: 10px;" alt="توقيع الموظف">` : 
-                        `<div style="height: 80px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; color: #999; font-size: 14px;">
-                            (يمكن التوقيع يدوياً بعد الطباعة)
-                        </div>`}
-                        <div>
-                            <strong>الاسم:</strong> ${employeeName}<br>
-                            <strong>التاريخ:</strong> ${arabicDate}
+                    
+                    <div style="margin-bottom: 20px; page-break-inside: avoid;">
+                        <h4 style="color: #007B93; margin-bottom: 10px; border-bottom: 2px solid #9ACED8; padding-bottom: 5px;">تفاصيل العهدة:</h4>
+                        <table style="width: 100%; margin-bottom: 10px;">
+                            <tr>
+                                <td style="width: 30%; font-weight: bold; padding: 8px; background-color: #f2f9fb;">نوع العهدة:</td>
+                                <td style="padding: 8px; border-bottom: 1px solid #ddd;">${assetType}</td>
+                            </tr>
+                        </table>
+                        
+                        <h5 style="margin-top: 15px; margin-bottom: 10px; color: #007B93;">المعدات والأجهزة:</h5>
+                        <div style="background-color: #f2f9fb; padding: 15px; border-radius: 8px; border-right: 4px solid #007B93; min-height: 100px;">
+                            ${assetDetails.replace(/\n/g, '<br>')}
                         </div>
                     </div>
                     
-                    <div>
-                        <div style="border-top: 2px solid #007B93; width: 80%; margin: 0 auto; padding-top: 10px; margin-bottom: 20px;">
-                            توقيع مسؤول تقنية المعلومات
-                        </div>
-                        <div style="height: 80px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; color: #999;">
-                            _________________________
-                        </div>
-                        <div>
-                            <strong>الاسم:</strong> _________________________<br>
-                            <strong>التاريخ:</strong> _________________________
+                    ${notes ? `
+                    <div style="margin-bottom: 20px; page-break-inside: avoid;">
+                        <h5 style="color: #007B93; margin-bottom: 10px;">ملاحظات إضافية:</h5>
+                        <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px dashed #9ACED8;">
+                            ${notes.replace(/\n/g, '<br>')}
                         </div>
                     </div>
-                </div>
-                
-                <div class="digital-signature">
-                    <p style="font-size: 12px; color: #666; text-align: center; margin-top: 30px;">
-                        تم إنشاء هذه الوثيقة إلكترونياً عبر نظام عهدة تقنية المعلومات - مدارس العلم النافع الأهلية
-                    </p>
-                    <p style="font-size: 11px; color: #999; text-align: center;">
-                        تاريخ الإنشاء: ${new Date().toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                    </p>
+                    ` : ''}
+                    
+                    <div class="terms" style="page-break-inside: avoid;">
+                        <h4><i class="fas fa-file-contract"></i> شروط العهدة:</h4>
+                        <ol style="padding-right: 20px; margin-top: 10px; font-size: 14px;">
+                            <li style="margin-bottom: 8px;">يلتزم المستلم بالمحافظة على العهدة واستخدامها للأغراض الرسمية فقط.</li>
+                            <li style="margin-bottom: 8px;">يُحمل المستلم المسؤولية الكاملة عن الأجهزة المستلمة وعليه إرجاعها بنفس الحالة.</li>
+                            <li style="margin-bottom: 8px;">في حالة حدوث أي عطل، يجب إبلاغ قسم تقنية المعلومات فوراً وعدم محاولة الإصلاح الذاتي.</li>
+                            <li style="margin-bottom: 8px;">يمنع نقل العهدة لأي شخص آخر أو مكان آخر دون موافقة كتابية من القسم.</li>
+                            <li style="margin-bottom: 8px;">عند انتهاء الحاجة أو إنهاء الخدمة، يجب إعادة العهدة خلال أسبوع.</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="signature-area" style="margin-top: 40px; page-break-inside: avoid;">
+                        <div>
+                            <div style="border-top: 2px solid #007B93; width: 80%; margin: 0 auto; padding-top: 10px; margin-bottom: 20px; font-weight: bold;">
+                                توقيع الموظف المستلم
+                            </div>
+                            ${signatureData ? `<img src="${signatureData}" style="max-width: 180px; max-height: 70px; border: 1px solid #ddd; padding: 5px; background: white; margin-bottom: 10px;" alt="توقيع الموظف">` : 
+                            `<div style="height: 70px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; color: #999; font-size: 13px; border: 1px dashed #ccc; border-radius: 5px;">
+                                (يمكن التوقيع يدوياً بعد الطباعة)
+                            </div>`}
+                            <div style="margin-top: 10px;">
+                                <strong>الاسم:</strong> ${employeeName}<br>
+                                <strong>التاريخ:</strong> ${arabicDate}
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div style="border-top: 2px solid #007B93; width: 80%; margin: 0 auto; padding-top: 10px; margin-bottom: 20px; font-weight: bold;">
+                                توقيع مسؤول تقنية المعلومات
+                            </div>
+                            <div style="height: 70px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; color: #999; border: 1px dashed #ccc; border-radius: 5px;">
+                                _________________________
+                            </div>
+                            <div style="margin-top: 10px;">
+                                <strong>الاسم:</strong> _________________________<br>
+                                <strong>التاريخ:</strong> _________________________
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="digital-signature" style="page-break-inside: avoid;">
+                        <p style="font-size: 11px; color: #666; text-align: center; margin-top: 30px;">
+                            تم إنشاء هذه الوثيقة إلكترونياً عبر نظام عهدة تقنية المعلومات - مدارس العلم النافع الأهلية
+                        </p>
+                        <p style="font-size: 10px; color: #999; text-align: center;">
+                            تاريخ الإنشاء: ${new Date().toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                    </div>
                 </div>
             `;
             
@@ -1032,22 +1029,30 @@
         function exportToPDF() {
             const element = document.getElementById('previewContent');
             const opt = {
-                margin: [10, 10, 10, 10],
+                margin: [15, 15, 15, 15],
                 filename: `عهدة_${document.getElementById('employeeName').value}_${formatDateForFilename()}.pdf`,
-                image: { type: 'jpeg', quality: 1.0 },
+                image: { 
+                    type: 'jpeg', 
+                    quality: 0.98 
+                },
                 html2canvas: { 
                     scale: 2,
                     useCORS: true,
                     logging: false,
-                    windowWidth: element.scrollWidth,
+                    windowWidth: 794, // A4 width in pixels at 96 DPI
                     windowHeight: element.scrollHeight,
-                    backgroundColor: '#FFFFFF'
+                    backgroundColor: '#FFFFFF',
+                    letterRendering: true
                 },
                 jsPDF: { 
                     unit: 'mm', 
                     format: 'a4', 
                     orientation: 'portrait',
-                    compress: true
+                    compress: true,
+                    hotfixes: ["px_scaling"]
+                },
+                pagebreak: { 
+                    mode: ['avoid-all', 'css', 'legacy'] 
                 }
             };
             
@@ -1057,7 +1062,25 @@
         
         // دالة الطباعة
         function printDocument() {
+            const printContent = document.getElementById('previewContent').innerHTML;
+            const originalContent = document.body.innerHTML;
+            
+            document.body.innerHTML = `
+                <div style="width: 210mm; margin: 0 auto; padding: 20mm; background: white; font-family: 'Almarai', sans-serif;">
+                    ${printContent}
+                </div>
+            `;
+            
             window.print();
+            
+            // إعادة المحتوى الأصلي
+            document.body.innerHTML = originalContent;
+            
+            // إعادة تهيئة الأحداث
+            setTimeout(() => {
+                document.addEventListener('DOMContentLoaded', arguments.callee);
+                initializeSignature();
+            }, 100);
         }
         
         // دالة تنسيق التاريخ
@@ -1106,6 +1129,16 @@
                         setTimeout(() => {
                             if (assetData.signatureData) {
                                 document.getElementById('signatureData').value = assetData.signatureData;
+                                // رسم التوقيع على الـ canvas
+                                const img = new Image();
+                                img.onload = function() {
+                                    if (ctx) {
+                                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                                        document.getElementById('signaturePlaceholder').style.display = 'none';
+                                    }
+                                };
+                                img.src = assetData.signatureData;
                             }
                             generateAssetDocument();
                         }, 1000);
